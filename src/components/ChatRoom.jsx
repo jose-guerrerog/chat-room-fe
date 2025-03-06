@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { createConsumer } from '@rails/actioncable';
 
 // API URL pointing to Rails server
-const API_URL = 'http://localhost:3001';
+const API_URL = `http://${REACT_APP_RAILS_APP_URL}`;
 
 function ChatRoom({ username }) {
   const { roomId } = useParams();
@@ -66,7 +66,7 @@ function ChatRoom({ username }) {
   const setupActionCable = () => {
     console.log('Setting up Action Cable connection...');
     try {
-      const consumer = createConsumer('ws://localhost:3001/cable');
+      const consumer = createConsumer(`ws://${REACT_APP_RAILS_APP_URL}/cable`);
       
       const subscription = consumer.subscriptions.create(
         { channel: 'RoomChannel', room_id: roomId },

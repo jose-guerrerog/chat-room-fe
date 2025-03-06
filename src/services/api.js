@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3001';
+const API_URL = `http://${REACT_APP_RAILS_APP_URL}`;
 
 // Get all rooms
 export async function getRooms() {

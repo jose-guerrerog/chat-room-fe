@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 // API URL pointing to Rails server
-const API_URL = 'http://localhost:3001';
+const API_URL =  `http://${REACT_APP_RAILS_APP_URL}`;
 
 function RoomsList({ username, setUsername }) {
   const [rooms, setRooms] = useState([]);
