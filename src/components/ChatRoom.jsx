@@ -68,6 +68,20 @@ function ChatRoom({ username }) {
     try {
       const consumer = createConsumer(`${process.env.REACT_APP_WEBSOCKET_RAILS_URL}/cable`);
       
+      ws.onopen = function() {
+        console.log('WebSocket connected successfully!');
+      };
+      
+      ws.onerror = function(error) {
+        console.error('WebSocket error occurred:', error);
+      };
+      
+      ws.onclose = function(event) {
+        console.log('WebSocket closed with code:', event.code);
+        console.log('Reason:', event.reason || 'No reason provided');
+        console.log('Clean closure:', event.wasClean);
+      };
+      
       const subscription = consumer.subscriptions.create(
         { channel: 'RoomChannel', room_id: roomId },
         {
