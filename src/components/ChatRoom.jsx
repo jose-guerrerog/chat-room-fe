@@ -92,15 +92,17 @@ function ChatRoom({ username }) {
             console.log('Disconnected from RoomChannel');
           },
           received(data) {
-            console.log('Received message:', data);
+            console.log('FRONTEND: Received message data:', data);
             // Handle the message display
           },
           speak(content, senderName) {
-            console.log('Sending message:', content);
-            return this.perform('speak', { 
+            console.log('FRONTEND: About to send message:', content);
+            const result = this.perform('speak', { 
               content: content, 
               sender_name: senderName 
             });
+            console.log('FRONTEND: Result of perform:', result);
+            return result;
           }
         }
       );
