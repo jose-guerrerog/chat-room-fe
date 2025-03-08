@@ -86,28 +86,17 @@ function ChatRoom({ username }) {
         { channel: 'RoomChannel', room_id: roomId },
         {
           connected() {
-            console.log('Connected to RoomChannel for room ID:', roomId);
+            console.log('Connected to RoomChannel for room:', roomId);
           },
           disconnected() {
             console.log('Disconnected from RoomChannel');
           },
           received(data) {
-            console.log('Received message via WebSocket:', data);
-            setMessages((prevMessages) => {
-              // Check if this message already exists in our messages array
-              const messageExists = prevMessages.some(msg => 
-                msg.id === data.id || (msg.content === data.content && msg.sender_name === data.sender_name)
-              );
-              
-              if (!messageExists) {
-                return [...prevMessages, data];
-              }
-              return prevMessages;
-            });
+            console.log('Received message:', data);
+            // Handle the message display
           },
-          // Method to send messages via WebSocket
           speak(content, senderName) {
-            console.log('Sending message via WebSocket:', content);
+            console.log('Sending message:', content);
             return this.perform('speak', { 
               content: content, 
               sender_name: senderName 
