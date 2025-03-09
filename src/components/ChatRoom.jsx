@@ -94,6 +94,11 @@ function ChatRoom({ username }) {
           received(data) {
             console.log('FRONTEND: Received message data:', data);
             // Handle the message display
+            setMessages(prevMessages => {
+              const newMessages = [...prevMessages, data];
+              console.log('New messages state after update:', newMessages);
+              return newMessages;
+            });
           },
           speak(content, senderName) {
             console.log('FRONTEND: About to send message:', content);
