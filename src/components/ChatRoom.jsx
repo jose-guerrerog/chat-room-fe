@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { createConsumer } from '@rails/actioncable';
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { createConsumer } from "@rails/actioncable";
 
 // API URL pointing to Rails server
 const API_URL = process.env.REACT_APP_RAILS_APP_URL;
@@ -9,8 +9,8 @@ function ChatRoom({ username }) {
   const { roomId } = useParams();
   const [room, setRoom] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [error, setError] = useState('');
+  const [newMessage, setNewMessage] = useState("");
+  const [error, setError] = useState("");
   const messagesEndRef = useRef(null);
   const cableRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +22,7 @@ function ChatRoom({ username }) {
 
     return () => {
       if (cableRef.current) {
-        console.log('Cleaning up Action Cable subscription');
+        console.log("Cleaning up Action Cable subscription");
         cableRef.current.unsubscribe();
       }
     };
@@ -41,7 +41,7 @@ function ChatRoom({ username }) {
       const data = await response.json();
       setRoom(data);
     } catch (err) {
-      setError('Failed to fetch room details');
+      setError("Failed to fetch room details");
       console.error(err);
     }
   };
@@ -56,7 +56,7 @@ function ChatRoom({ username }) {
       const data = await response.json();
       setMessages(data);
     } catch (err) {
-      setError('Failed to fetch messages');
+      setError("Failed to fetch messages");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -64,71 +64,107 @@ function ChatRoom({ username }) {
   };
 
   const setupActionCable = () => {
-    console.log('Setting up Action Cable connection...');
+    console.log("Setting up Action Cable connection...");
     try {
-      const consumer = createConsumer(`${process.env.REACT_APP_WEBSOCKET_RAILS_URL}/cable`);
-      
-      consumer.onopen = function() {
-        console.log('WebSocket connected successfully!');
+      const consumer = createConsumer(
+        `${process.env.REACT_APP_WEBSOCKET_RAILS_URL}/cable`
+      );
+
+      consumer.onopen = function () {
+        console.log("WebSocket connected successfully!");
       };
-      
-      consumer.onerror = function(error) {
-        console.error('WebSocket error occurred:', error);
+
+      consumer.onerror = function (error) {
+        console.error("WebSocket error occurred:", error);
       };
-      
-      consumer.onclose = function(event) {
-        console.log('WebSocket closed with code:', event.code);
-        console.log('Reason:', event.reason || 'No reason provided');
-        console.log('Clean closure:', event.wasClean);
+
+      consumer.onclose = function (event) {
+        console.log("WebSocket closed with code:", event.code);
+        console.log("Reason:", event.reason || "No reason provided");
+        console.log("Clean closure:", event.wasClean);
       };
 
       const subscription = consumer.subscriptions.create(
-        { channel: 'RoomChannel', room_id: roomId },
+        { channel: "RoomChannel", room_id: roomId },
         {
           connected() {
-            console.log('Connected to RoomChannel for room:', roomId);
+            console.log("Connected to RoomChannel for room:", roomId);
           },
           disconnected() {
-            console.log('Disconnected from RoomChannel');
+            console.log("Disconnected from RoomChannel");
           },
           received(data) {
-            console.log('FRONTEND: Received message data:', data);
+            console.log("FRONTEND: Received message data:", data);
             // Handle the message display
-            setMessages(prevMessages => {
+            let formattedTimestamp;
+            if (
+              data.timestamp &&
+              !isNaN(data.timestamp) &&
+              data.timestamp.toString().length <= 10
+            ) {
+              // Convert seconds to milliseconds and create a date
+              const jsTimestamp = parseInt(data.timestamp) * 1000;
+              formattedTimestamp = new Date(jsTimestamp).toLocaleString(
+                "en-AU",
+                {
+                  timeZone: "Australia/Sydney",
+                }
+              );
+            } else if (data.created_at) {
+              formattedTimestamp = data.created_at;
+            } else {
+              formattedTimestamp = new Date().toLocaleString("en-AU", {
+                timeZone: "Australia/Sydney",
+              });
+            }
+
+            // Add creation date if missing (in Australian time)
+            const messageWithDate = {
+              ...data,
+              created_at: formattedTimestamp,
+            };
+
+            setMessages((prevMessages) => {
               // Generate a unique identifier for each message
-              const messageKey = `${data.content}-${data.sender_name}-${data.created_at || data.timestamp}`;
-              
+              const messageKey = `${messageWithDate.content}-${
+                messageWithDate.sender_name
+              }-${messageWithDate.created_at || messageWithDate.timestamp}`;
+
               // Check for duplicates using the unique identifier
-              const isDuplicate = prevMessages.some(msg => {
-                const msgKey = `${msg.content}-${msg.sender_name}-${msg.created_at || msg.timestamp}`;
+              const isDuplicate = prevMessages.some((msg) => {
+                const msgKey = `${msg.content}-${msg.sender_name}-${
+                  msg.created_at || msg.timestamp
+                }`;
                 return msgKey === messageKey;
               });
-              
+
               if (isDuplicate) {
-                console.log('Duplicate message detected, not adding:', data);
+                console.log("Duplicate message detected, not adding:", data);
                 return prevMessages;
               }
-              
-              console.log('New message added to state:', data);
-              return [...prevMessages, data];
+
+              console.log("New message added to state:", data);
+              return [...prevMessages, messageWithDate];
             });
           },
           speak(content, senderName) {
-            console.log('FRONTEND: About to send message:', content);
-            const result = this.perform('speak', { 
-              content: content, 
-              sender_name: senderName 
+            console.log("FRONTEND: About to send message:", content);
+            const result = this.perform("speak", {
+              content: content,
+              sender_name: senderName,
             });
-            console.log('FRONTEND: Result of perform:', result);
+            console.log("FRONTEND: Result of perform:", result);
             return result;
-          }
+          },
         }
       );
-      
+
       cableRef.current = subscription;
     } catch (error) {
-      console.error('Error setting up Action Cable:', error);
-      setError('WebSocket connection failed. Messages may not update in real-time.');
+      console.error("Error setting up Action Cable:", error);
+      setError(
+        "WebSocket connection failed. Messages may not update in real-time."
+      );
     }
   };
 
@@ -139,47 +175,47 @@ function ChatRoom({ username }) {
     try {
       if (cableRef.current) {
         // Send message via WebSocket only
-        console.log('Attempting to send message via WebSocket:', newMessage);
+        console.log("Attempting to send message via WebSocket:", newMessage);
         cableRef.current.speak(newMessage, username);
-        
+
         // Add message locally for immediate feedback (will be replaced by WebSocket broadcast)
         const tempMessage = {
           id: `temp-${Date.now()}`,
           content: newMessage,
           sender_name: username,
           created_at: new Date().toISOString(),
-          temp: true
+          temp: true,
         };
-        
+
         // setMessages(prev => {
         //   // Only add if not duplicate
-        //   const exists = prev.some(msg => 
+        //   const exists = prev.some(msg =>
         //     msg.content === tempMessage.content && msg.sender_name === tempMessage.sender_name
         //   );
-          
+
         //   if (!exists) {
         //     return [...prev, tempMessage];
         //   }
         //   return prev;
         // });
-        
-        setNewMessage('');
+
+        setNewMessage("");
       } else {
-        throw new Error('WebSocket connection not established');
+        throw new Error("WebSocket connection not established");
       }
     } catch (err) {
-      setError('Failed to send message');
-      console.error('Error sending message via WebSocket:', err);
+      setError("Failed to send message");
+      console.error("Error sending message via WebSocket:", err);
     }
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   if (isLoading) {
@@ -189,25 +225,33 @@ function ChatRoom({ username }) {
   return (
     <div className="chat-container">
       <header className="chat-header">
-        <Link to="/rooms" className="back-link">← Back to Rooms</Link>
-        <h1>{room?.name || 'Chat Room'}</h1>
+        <Link to="/rooms" className="back-link">
+          ← Back to Rooms
+        </Link>
+        <h1>{room?.name || "Chat Room"}</h1>
       </header>
-      
+
       {error && <div className="error">{error}</div>}
-      
+
       <div className="messages-container">
         {messages.length === 0 ? (
-          <div className="no-messages">No messages yet. Start the conversation!</div>
+          <div className="no-messages">
+            No messages yet. Start the conversation!
+          </div>
         ) : (
           <div className="messages">
             {messages.map((message, index) => (
               <div
                 key={message.id || index}
-                className={`message ${message.sender_name === username ? 'own-message' : ''}`}
+                className={`message ${
+                  message.sender_name === username ? "own-message" : ""
+                }`}
               >
                 <div className="message-header">
                   <span className="message-sender">{message.sender_name}</span>
-                  <span className="message-time">{formatTimestamp(message.created_at)}</span>
+                  <span className="message-time">
+                    {formatTimestamp(message.created_at)}
+                  </span>
                 </div>
                 <div className="message-content">{message.content}</div>
               </div>
@@ -216,7 +260,7 @@ function ChatRoom({ username }) {
           </div>
         )}
       </div>
-      
+
       <form onSubmit={handleSendMessage} className="message-form">
         <input
           type="text"
@@ -225,7 +269,9 @@ function ChatRoom({ username }) {
           placeholder="Type a message..."
           required
         />
-        <button type="submit" className="send-button">Send</button>
+        <button type="submit" className="send-button">
+          Send
+        </button>
       </form>
     </div>
   );
