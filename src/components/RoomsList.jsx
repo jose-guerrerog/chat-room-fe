@@ -26,11 +26,6 @@ function RoomsList() {
     }
   }, [username, initializeUsername]);
   
-  // Include user loading in overall loading check
-  if (isLoading || isUserLoading) {
-    return <div className="loading">Loading rooms...</div>;
-  }
-
   useEffect(() => {
     fetchRooms();
     // Add dummy rooms for testing if API fails
@@ -95,6 +90,10 @@ function RoomsList() {
   };
 
   if (isLoading) {
+    return <div className="loading">Loading rooms...</div>;
+  }
+
+  if (isLoading || isUserLoading) {
     return <div className="loading">Loading rooms...</div>;
   }
 
