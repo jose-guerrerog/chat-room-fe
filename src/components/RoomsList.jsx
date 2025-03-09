@@ -8,10 +8,28 @@ const API_URL = process.env.REACT_APP_RAILS_APP_URL;
 function RoomsList() {
   const username = useUserStore(state => state.username);
   const setUsername = useUserStore(state => state.setUsername);
+  const initializeUsername = useUserStore(state => state.initializeUsername);
+
+  const [isUserLoading, setIsUserLoading] = useState(!username);
+
   const [rooms, setRooms] = useState([]);
   const [newRoomName, setNewRoomName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!username) {
+      initializeUsername();
+      setIsUserLoading(false);
+    } else {
+      setIsUserLoading(false);
+    }
+  }, [username, initializeUsername]);
+  
+  // Include user loading in overall loading check
+  if (isLoading || isUserLoading) {
+    return <div className="loading">Loading rooms...</div>;
+  }
 
   useEffect(() => {
     fetchRooms();
@@ -74,7 +92,6 @@ function RoomsList() {
   const handleUsernameChange = (e) => {
     const newUsername = e.target.value;
     setUsername(newUsername);
-    localStorage.setItem('username', newUsername);
   };
 
   if (isLoading) {
