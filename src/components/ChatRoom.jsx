@@ -95,9 +95,22 @@ function ChatRoom({ username }) {
             console.log('FRONTEND: Received message data:', data);
             // Handle the message display
             setMessages(prevMessages => {
-              const newMessages = [...prevMessages, data];
-              console.log('New messages state after update:', newMessages);
-              return newMessages;
+              // Generate a unique identifier for each message
+              const messageKey = `${data.content}-${data.sender_name}-${data.created_at || data.timestamp}`;
+              
+              // Check for duplicates using the unique identifier
+              const isDuplicate = prevMessages.some(msg => {
+                const msgKey = `${msg.content}-${msg.sender_name}-${msg.created_at || msg.timestamp}`;
+                return msgKey === messageKey;
+              });
+              
+              if (isDuplicate) {
+                console.log('Duplicate message detected, not adding:', data);
+                return prevMessages;
+              }
+              
+              console.log('New message added to state:', data);
+              return [...prevMessages, data];
             });
           },
           speak(content, senderName) {
@@ -121,9 +134,8 @@ function ChatRoom({ username }) {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    console.log('here')
     if (!newMessage.trim()) return;
-    console.log('here 2')
+
     try {
       if (cableRef.current) {
         // Send message via WebSocket only
