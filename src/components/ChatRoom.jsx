@@ -139,17 +139,17 @@ function ChatRoom({ username }) {
           temp: true
         };
         
-        setMessages(prev => {
-          // Only add if not duplicate
-          const exists = prev.some(msg => 
-            msg.content === tempMessage.content && msg.sender_name === tempMessage.sender_name
-          );
+        // setMessages(prev => {
+        //   // Only add if not duplicate
+        //   const exists = prev.some(msg => 
+        //     msg.content === tempMessage.content && msg.sender_name === tempMessage.sender_name
+        //   );
           
-          if (!exists) {
-            return [...prev, tempMessage];
-          }
-          return prev;
-        });
+        //   if (!exists) {
+        //     return [...prev, tempMessage];
+        //   }
+        //   return prev;
+        // });
         
         setNewMessage('');
       } else {
