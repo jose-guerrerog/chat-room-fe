@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ChatRoom from './components/ChatRoom';
 import RoomsList from './components/RoomsList';
@@ -10,7 +10,6 @@ function App() {
   const initializeUsername = useUserStore(state => state.initializeUsername);
 
   useEffect(() => {
-    // Initialize username on app load
     initializeUsername();
   }, [initializeUsername]);
 

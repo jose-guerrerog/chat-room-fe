@@ -82,8 +82,6 @@ function ChatRoom() {
 
       consumer.onclose = function (event) {
         console.log("WebSocket closed with code:", event.code);
-        console.log("Reason:", event.reason || "No reason provided");
-        console.log("Clean closure:", event.wasClean);
       };
 
       const subscription = consumer.subscriptions.create(
@@ -96,8 +94,6 @@ function ChatRoom() {
             console.log("Disconnected from RoomChannel");
           },
           received(data) {
-            console.log("FRONTEND: Received message data:", data);
-            // Handle the message display
             let formattedTimestamp;
             if (
               data.timestamp &&
@@ -120,7 +116,6 @@ function ChatRoom() {
               });
             }
 
-            // Add creation date if missing (in Australian time)
             const messageWithDate = {
               ...data,
               created_at: formattedTimestamp,
@@ -132,7 +127,6 @@ function ChatRoom() {
                 messageWithDate.sender_name
               }-${messageWithDate.created_at || messageWithDate.timestamp}`;
 
-              // Check for duplicates using the unique identifier
               const isDuplicate = prevMessages.some((msg) => {
                 const msgKey = `${msg.content}-${msg.sender_name}-${
                   msg.created_at || msg.timestamp
@@ -141,21 +135,17 @@ function ChatRoom() {
               });
 
               if (isDuplicate) {
-                console.log("Duplicate message detected, not adding:", data);
                 return prevMessages;
               }
 
-              console.log("New message added to state:", data);
               return [...prevMessages, messageWithDate];
             });
           },
           speak(content, senderName) {
-            console.log("FRONTEND: About to send message:", content);
             const result = this.perform("speak", {
               content: content,
               sender_name: senderName,
             });
-            console.log("FRONTEND: Result of perform:", result);
             return result;
           },
         }
