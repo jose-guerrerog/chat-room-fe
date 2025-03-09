@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import useUserStore from '../store/userStore';
 
 // API URL pointing to Rails server
 const API_URL = process.env.REACT_APP_RAILS_APP_URL;
 
-function RoomsList({ username, setUsername }) {
+function RoomsList() {
+  const username = useUserStore(state => state.username);
+  const setUsername = useUserStore(state => state.setUsername);
   const [rooms, setRooms] = useState([]);
   const [newRoomName, setNewRoomName] = useState('');
   const [error, setError] = useState('');

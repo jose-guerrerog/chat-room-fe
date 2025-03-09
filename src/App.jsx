@@ -2,26 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ChatRoom from './components/ChatRoom';
 import RoomsList from './components/RoomsList';
+import useUserStore from './store/userStore';
 import './App.css';
 
 function App() {
-  const [username, setUsername] = useState(localStorage.getItem('username') || '');
+
+  const initializeUsername = useUserStore(state => state.initializeUsername);
 
   useEffect(() => {
-    if (!username) {
-      const defaultName = `User${Math.floor(Math.random() * 1000)}`;
-      setUsername(defaultName);
-      localStorage.setItem('username', defaultName);
-    }
-  }, [username]);
+    // Initialize username on app load
+    initializeUsername();
+  }, [initializeUsername]);
 
   return (
     <Router>
       <div className="app">
         <Routes>
           <Route path="/" element={<Navigate to="/rooms" />} />
-          <Route path="/rooms" element={<RoomsList username={username} setUsername={setUsername} />} />
-          <Route path="/rooms/:roomId" element={<ChatRoom username={username} />} />
+          <Route path="/rooms" element={<RoomsList />} />
+          <Route path="/rooms/:roomId" element={<ChatRoom />} />
         </Routes>
       </div>
     </Router>

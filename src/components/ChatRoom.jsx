@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { createConsumer } from "@rails/actioncable";
+import useUserStore from "../store/userStore";
 
 // API URL pointing to Rails server
 const API_URL = process.env.REACT_APP_RAILS_APP_URL;
 
-function ChatRoom({ username }) {
+function ChatRoom() {
+  const username = useUserStore(state => state.username);
   const { roomId } = useParams();
   const [room, setRoom] = useState(null);
   const [messages, setMessages] = useState([]);
