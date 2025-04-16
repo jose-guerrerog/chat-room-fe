@@ -120,7 +120,6 @@ function ChatRoom() {
               ...data,
               created_at: formattedTimestamp,
             };
-
             setMessages((prevMessages) => {
               // Generate a unique identifier for each message
               const messageKey = `${messageWithDate.content}-${
@@ -205,11 +204,6 @@ function ChatRoom() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
   if (isLoading) {
     return <div className="loading">Loading chat...</div>;
   }
@@ -242,7 +236,7 @@ function ChatRoom() {
                 <div className="message-header">
                   <span className="message-sender">{message.sender_name}</span>
                   <span className="message-time">
-                    {formatTimestamp(message.created_at)}
+                    {message.created_at}
                   </span>
                 </div>
                 <div className="message-content">{message.content}</div>
